@@ -10,7 +10,11 @@
   "dependencies": {
     "@headlessui/vue": "^1.7.7",
     "@heroicons/vue": "^2.0.13",
+    "@tailwindcss/forms": "^0.5.3",
+    "autoprefixer": "^10",
+    "axios": "^1.3.2",
     "core-js": "^3.8.3",
+    "postcss": "^8",
     "register-service-worker": "^1.7.2",
     "tailwindcss": "^3.2.4",
     "vue": "^3.2.13",
@@ -29,7 +33,8 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-vue": "^8.0.3",
     "lint-staged": "^11.1.2",
-    "prettier": "^2.4.1"
+    "prettier": "^2.4.1",
+    "vue-cli-plugin-tailwind": "~3.0.0"
   },
   "gitHooks": {
     "pre-commit": "lint-staged"

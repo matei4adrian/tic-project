@@ -71,7 +71,7 @@ const controller = {
       if (user) {
         res.status(200).json(user);
       } else {
-        res.status(200).send("User is not logged in!");
+        res.status(200).send(null);
       }
     });
   },

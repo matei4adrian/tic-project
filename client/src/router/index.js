@@ -1,20 +1,78 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue";
+import CompaniesView from "../views/CompaniesView.vue";
+import EditCompany from "../components/Companies/EditCompany.vue";
+import CreateCompany from "../components/Companies/CreateCompany.vue";
+import OrdersGrid from "../components/Orders/OrdersGrid.vue";
+import EditOrder from "../components/Orders/EditOrder.vue";
+import CreateOrder from "../components/Orders/CreateOrder.vue";
+import TheRegister from "../components/TheRegister.vue";
+import TheLogin from "../components/TheLogin.vue";
+
+import axios from "axios";
+
+const getCurrentUser = async () => {
+  const res = await axios.get("http://localhost:3000/api/users/currentUser");
+  return res.data;
+};
+
+const requireAuth = async (to, from, next) => {
+  const user = await getCurrentUser();
+  if (!user) {
+    next({ name: "TheLogin" });
+  } else {
+    next();
+  }
+};
 
 const routes = [
   {
     path: "/",
-    name: "home",
-    component: HomeView,
+    name: "companies",
+    component: CompaniesView,
   },
   {
-    path: "/about",
-    name: "about",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/AboutView.vue"),
+    path: "/companies/:id",
+    name: "EditCompany",
+    component: EditCompany,
+    props: true,
+    beforeEnter: requireAuth,
+  },
+  {
+    path: "/companies/createCompany",
+    name: "CreateCompany",
+    component: CreateCompany,
+    props: true,
+    beforeEnter: requireAuth,
+  },
+  {
+    path: "/companies/:id/orders",
+    name: "OrdersGrid",
+    component: OrdersGrid,
+    props: true,
+  },
+  {
+    path: "/companies/:companyId/orders/:orderId",
+    name: "EditOrder",
+    component: EditOrder,
+    props: true,
+    beforeEnter: requireAuth,
+  },
+  {
+    path: "/companies/:companyId/orders/createOrder",
+    name: "CreateOrder",
+    component: CreateOrder,
+    props: true,
+    beforeEnter: requireAuth,
+  },
+  {
+    path: "/register",
+    name: "TheRegister",
+    component: TheRegister,
+  },
+  {
+    path: "/login",
+    name: "TheLogin",
+    component: TheLogin,
   },
 ];
 
