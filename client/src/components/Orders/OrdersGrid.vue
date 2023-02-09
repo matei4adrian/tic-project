@@ -7,9 +7,17 @@
             <div class="sm:flex-auto">
               <h1 class="text-xl font-semibold text-gray-900">Orders</h1>
               <p class="mt-2 text-sm text-gray-700">
-                A list of all orders of company {{ id }}
+                A list of all orders of company {{ company.name }}
               </p>
+              <button
+                type="button"
+                class="inline-flex mt-3 mr-5 items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:w-auto"
+                @click="handleClose"
+              >
+                Back to companies
+              </button>
             </div>
+
             <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
               <button
                 type="button"
@@ -63,7 +71,10 @@
                       </tr>
                     </thead>
                     <tbody class="bg-white">
-                      <tr v-for="(order, orderIdx) in orders" :key="order.id">
+                      <tr
+                        v-for="(order, orderIdx) in state.orders"
+                        :key="order.id"
+                      >
                         <td
                           :class="[
                             orderIdx !== orders.length - 1
@@ -143,7 +154,8 @@
 
 <script setup>
 import { TrashIcon, PencilIcon } from "@heroicons/vue/20/solid";
-import { defineProps, toRefs } from "vue";
+import axios from "axios";
+import { defineProps, reactive, toRefs } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -154,96 +166,51 @@ const props = defineProps({
 
 const { id } = toRefs(props);
 
+const getCompanyById = async () => {
+  const res = await axios.get(
+    `http://localhost:3000/api/companies/${id.value}`
+  );
+  return res.data;
+};
+
+const company = await getCompanyById();
+
 const handleAdd = () => {
   router.push({ name: "CreateOrder", params: { companyId: id.value } });
 };
 
 const handleEdit = (orderId) => {
-  router.push({ name: "EditOrder", params: { companyId: id.value, orderId } });
+  router.push({
+    name: "EditOrder",
+    params: { companyId: id.value, orderId },
+  });
 };
 
-const handleDelete = (orderId) => {
-  console.log(orderId);
+const getOrders = async () => {
+  const res = await axios.get(
+    `http://localhost:3000/api/companies/${id.value}/orders`
+  );
+  return res.data;
+};
+const orders = await getOrders();
+const state = reactive({ orders: orders });
+
+const handleDelete = async (orderId) => {
+  const token = localStorage.getItem("token").slice(1, -1);
+  const res = await axios.delete(
+    `http://localhost:3000/api/companies/${id.value}/orders/${orderId}`,
+    {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  console.log(res.data.message);
+  state.orders = await getOrders();
 };
 
-const orders = [
-  {
-    id: "1",
-    customerName: "Lindsay Walton",
-    phoneContact: "0744242648",
-    address: "Str Primaverii nr 2",
-    products: "Masina de spalat Beko, Uscator de rufe 10kg",
-  },
-  {
-    id: "2",
-    customerName: "Lindsay Walton",
-    phoneContact: "0744242648",
-    address: "Str Primaverii nr 2",
-    products: "Masina de spalat Beko, Uscator de rufe 10kg",
-  },
-  {
-    id: "3",
-    customerName: "Lindsay Walton",
-    phoneContact: "0744242648",
-    address: "Str Primaverii nr 2",
-    products: "Masina de spalat Beko, Uscator de rufe 10kg",
-  },
-  {
-    id: "4",
-    customerName: "Lindsay Walton",
-    phoneContact: "0744242648",
-    address: "Str Primaverii nr 2",
-    products: "Masina de spalat Beko, Uscator de rufe 10kg",
-  },
-  {
-    id: "5",
-    customerName: "Lindsay Walton",
-    phoneContact: "0744242648",
-    address: "Str Primaverii nr 2",
-    products: "Masina de spalat Beko, Uscator de rufe 10kg",
-  },
-  {
-    id: "6",
-    customerName: "Lindsay Walton",
-    phoneContact: "0744242648",
-    address: "Str Primaverii nr 2",
-    products: "Masina de spalat Beko, Uscator de rufe 10kg",
-  },
-  {
-    id: "7",
-    customerName: "Lindsay Walton",
-    phoneContact: "0744242648",
-    address: "Str Primaverii nr 2",
-    products: "Masina de spalat Beko, Uscator de rufe 10kg",
-  },
-  {
-    id: "8",
-    customerName: "Lindsay Walton",
-    phoneContact: "0744242648",
-    address: "Str Primaverii nr 2",
-    products: "Masina de spalat Beko, Uscator de rufe 10kg",
-  },
-  {
-    id: "9",
-    customerName: "Lindsay Walton",
-    phoneContact: "0744242648",
-    address: "Str Primaverii nr 2",
-    products: "Masina de spalat Beko, Uscator de rufe 10kg",
-  },
-  {
-    id: "10",
-    customerName: "Lindsay Walton",
-    phoneContact: "0744242648",
-    address: "Str Primaverii nr 2",
-    products: "Masina de spalat Beko, Uscator de rufe 10kg",
-  },
-  {
-    id: "11",
-    customerName: "Lindsay Walton",
-    phoneContact: "0744242648",
-    address: "Str Primaverii nr 2",
-    products: "Masina de spalat Beko, Uscator de rufe 10kg",
-  },
-  // More people...
-];
+const handleClose = () => {
+  router.push({ name: "companies" });
+};
 </script>

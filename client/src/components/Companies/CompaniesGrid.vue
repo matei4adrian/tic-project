@@ -55,7 +55,7 @@
                   </thead>
                   <tbody class="bg-white">
                     <tr
-                      v-for="(company, companyIdx) in companies"
+                      v-for="(company, companyIdx) in state.companies"
                       :key="company.id"
                     >
                       <td
@@ -135,6 +135,7 @@
 <script setup>
 import { TrashIcon, PencilIcon, EyeIcon } from "@heroicons/vue/20/solid";
 import axios from "axios";
+import { reactive } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -151,15 +152,25 @@ const handleViewOrders = (companyId) => {
   router.push({ name: "OrdersGrid", params: { id: companyId } });
 };
 
-const handleDelete = (companyId) => {
-  console.log(companyId);
-};
-
 const getCompanies = async () => {
   const res = await axios.get("http://localhost:3000/api/companies/");
-  console.log(res);
   return res.data;
 };
-
 const companies = await getCompanies();
+const state = reactive({ companies: companies });
+
+const handleDelete = async (companyId) => {
+  const token = localStorage.getItem("token").slice(1, -1);
+  const res = await axios.delete(
+    `http://localhost:3000/api/companies/${companyId}`,
+    {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  console.log(res.data.message);
+  state.companies = await getCompanies();
+};
 </script>

@@ -1,6 +1,9 @@
 <template>
   <div class="p-5 mt-20">
-    <form class="space-y-8 divide-y divide-gray-200">
+    <form
+      class="space-y-8 divide-y divide-gray-200"
+      @submit.prevent="handleSubmit"
+    >
       <div class="space-y-8 divide-y divide-gray-200 sm:space-y-5">
         <div class="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
           <div>
@@ -23,9 +26,11 @@
               <div class="mt-1 sm:col-span-2 sm:mt-0">
                 <input
                   type="text"
+                  required="true"
                   name="name"
                   id="name"
                   class="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm"
+                  v-model="name"
                 />
               </div>
             </div>
@@ -43,7 +48,9 @@
                   type="text"
                   name="address"
                   id="address"
+                  required="true"
                   class="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  v-model="address"
                 />
               </div>
             </div>
@@ -61,10 +68,14 @@
                   type="text"
                   name="phone"
                   id="phone"
+                  required="true"
                   class="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm"
+                  v-model="phone"
                 />
               </div>
             </div>
+
+            <div v-if="error" class="text-red-600">{{ error }}</div>
           </div>
         </div>
       </div>
@@ -81,8 +92,16 @@
           <button
             type="submit"
             class="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            v-if="!isPending"
           >
             Save
+          </button>
+          <button
+            class="ml-3 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            v-if="isPending"
+            disabled
+          >
+            Loading...
           </button>
         </div>
       </div>
@@ -92,6 +111,51 @@
 
 <script setup>
 import { useRouter } from "vue-router";
+import { ref } from "vue";
+import axios from "axios";
+
+const address = ref("");
+const name = ref("");
+const phone = ref("");
+
+const error = ref(null);
+const isPending = ref(false);
+
+const handleSubmit = async () => {
+  error.value = null;
+  isPending.value = true;
+  try {
+    const token = localStorage.getItem("token").slice(1, -1);
+    const res = await axios.post(
+      `http://localhost:3000/api/companies`,
+      {
+        name: name.value,
+        address: address.value,
+        phoneContact: phone.value,
+      },
+      {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!res) {
+      throw new Error("Could not complete add");
+    }
+    error.value = null;
+    isPending.value = false;
+  } catch (err) {
+    console.log(err.message);
+    error.value = err.message;
+    isPending.value = false;
+  }
+
+  if (!error.value) {
+    router.push({ name: "companies" });
+  }
+};
 
 const router = useRouter();
 const handleClose = () => {

@@ -2,9 +2,11 @@
   <Suspense>
     <TheNavbar />
   </Suspense>
-  <div class="content">
-    <router-view />
-  </div>
+  <Suspense>
+    <div class="content">
+      <router-view />
+    </div>
+  </Suspense>
 </template>
 
 <script>

@@ -2,9 +2,12 @@ const express = require("express");
 const app = express();
 const port = 3000;
 const cors = require("cors");
+const Chance = require("chance");
 const router = require("./routes");
-const middleware = require("./middleware/index");
+const { db } = require("./config/firebase-admin");
 const firebase = require("firebase/app");
+
+var chance = new Chance();
 
 const firebaseConfig = {
   apiKey: "AIzaSyCskQ9JkKBkyRiQOGv46UNBfHsrnNbpGe0",
@@ -26,6 +29,62 @@ const logger = require("morgan");
 app.use(logger("dev"));
 
 app.use("/api", router);
+
+app.get("/reset", async (req, res) => {
+  db.collection("Companies")
+    .get()
+    .then((querySnapshot) => {
+      querySnapshot.docs.forEach((snapshot) => {
+        console.log(snapshot.id);
+        db.collection("Companies").doc(snapshot.id).delete();
+      });
+      for (let i = 0; i < 2; i++) {
+        db.collection("Companies")
+          .add({
+            name: chance.company(),
+            address: chance.address(),
+            phoneContact: chance.phone({
+              country: "fr",
+              mobile: true,
+              formatted: false,
+            }),
+          })
+          .then((ref) => {
+            for (let j = 0; j < 2; j++) {
+              const products = chance.pickone([
+                "Telefon Apple iPhone 13 Pro 256 GB",
+                "Cablu 20m",
+                "Echipament retelistica",
+              ]);
+              db.collection("Companies")
+                .doc(ref.id)
+                .collection("Orders")
+                .add({
+                  customerName: chance.name(),
+                  address: chance.address(),
+                  phoneContact: chance.phone({
+                    country: "fr",
+                    mobile: true,
+                    formatted: false,
+                  }),
+                  products: products,
+                });
+            }
+          })
+          .catch((err) => {
+            return res.status(500).json({ message: err.message });
+          });
+      }
+
+      return res
+        .status(200)
+        .json({ message: "Data was reseted successfully!" });
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json({ message: err.message });
+    });
+});
 
 app.get("/", (req, res) => {
   res.status(200);
